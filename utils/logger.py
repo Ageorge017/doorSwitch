@@ -40,16 +40,27 @@ class Logger:
             "message": message
         }
         
+        # Add to message queue
+        self.message_queue.append(log_entry)
+        
         # Check if we need to flush the queue (50+ items and not a fatal log)
         if len(self.message_queue) >= 50 and level != "FATAL":
             self._flush_queue_to_file()
             self.message_queue.clear()
         
-        # Add to message queue
-        self.message_queue.append(log_entry)
+        # Print to console with color coding
+        color_reset = "\033[0m"
+        if level == "FATAL":
+            color_code = "\033[91m"  # Red
+        elif level == "ERROR":
+            color_code = "\033[93m"  # Yellow
+        else:
+            color_code = ""  # No color for other levels
         
-        # Print to console
-        print(f"[{current_time_str}][{level:<6}][{self.name}] {message}")
+        if color_code:
+            print(f"{color_code}[{current_time_str}][{level:<6}][{self.name}] {message}{color_reset}")
+        else:
+            print(f"[{current_time_str}][{level:<6}][{self.name}] {message}")
         
         if level == "ERROR" or level == "FATAL":
             signal_error(1)
@@ -70,54 +81,42 @@ class Logger:
         continuous_blink()
     
     def _write_queue_to_file(self):
-        """Writes the entire message queue to a text file."""
+        """Writes the entire message queue to a single log file."""
         try:
-            # Generate filename with timestamp
-            try:
-                (year, month, mday, hour, minute, second, weekday, yearday) = time.localtime()
-                timestamp = f"{year:04d}{month:02d}{mday:02d}_{hour:02d}{minute:02d}{second:02d}"
-            except:
-                timestamp = "unknown"
+            filename = "system_log.txt"
             
-            filename = f"fatal_log_{timestamp}.txt"
-            
-            with open(filename, "w") as file:
-                file.write(f"FATAL ERROR LOG - {self.name}\n")
-                file.write("=" * 50 + "\n\n")
-                
+            with open(filename, "a") as file:
                 for entry in self.message_queue:
                     file.write(f"[{entry['timestamp']}][{entry['level']:<6}][{entry['name']}] {entry['message']}\n")
-                
-                file.write("\n" + "=" * 50 + "\n")
-                file.write(f"Total log entries: {len(self.message_queue)}\n")
             
-            print(f"Fatal error log written to: {filename}")
+            print(f"Log entries written to: {filename}")
             
         except Exception as e:
-            print(f"Failed to write fatal log to file: {e}")
+            print(f"Failed to write log to file: {e}")
     
     def _flush_queue_to_file(self):
-        """Flushes the message queue to a regular log file when queue is full."""
+        """Flushes the message queue to log file, deletes the file, then writes current queue."""
         try:
+            filename = "system_log.txt"
+            
+            # Delete the existing file if it exists
             try:
-                (year, month, mday, hour, minute, second, weekday, yearday) = time.localtime()
-                timestamp = f"{year:04d}{month:02d}{mday:02d}_{hour:02d}{minute:02d}{second:02d}"
-            except:
-                timestamp = "unknown"
+                import os
+                try:
+                    os.remove(filename)
+                    print(f"Deleted existing log file: {filename}")
+                except OSError:
+                    # File doesn't exist, which is fine
+                    pass
+            except Exception as e:
+                print(f"Could not delete existing log file: {e}")
             
-            filename = f"log_flush_{timestamp}.txt"
-            
+            # Write the current queue to the file
             with open(filename, "w") as file:
-                file.write(f"LOG QUEUE FLUSH - {self.name}\n")
-                file.write("=" * 50 + "\n\n")
-                
                 for entry in self.message_queue:
                     file.write(f"[{entry['timestamp']}][{entry['level']:<6}][{entry['name']}] {entry['message']}\n")
-                
-                file.write("\n" + "=" * 50 + "\n")
-                file.write(f"Total log entries flushed: {len(self.message_queue)}\n")
             
-            print(f"Log queue flushed to: {filename}")
+            print(f"Log queue flushed to: {filename} ({len(self.message_queue)} entries)")
             
         except Exception as e:
             print(f"Failed to flush log queue to file: {e}")

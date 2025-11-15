@@ -2,7 +2,7 @@ from machine import Pin
 import time 
 
 RED_LED = Pin(15, Pin.OUT)
-ONBOARD_LED = Pin(25, Pin.OUT)
+ONBOARD_LED = Pin("LED", Pin.OUT)
 
 def signal_error(is_on):
     """Turns the Red LED ON for error or OFF for clear."""
@@ -21,7 +21,6 @@ def continuous_blink():
         time.sleep(0.5)
 
 def quick_toggle(x = 4):
-    print("HELLO")
     SLEEP_TIME = .1
     for i in range(x):
         val = ONBOARD_LED.value()

@@ -6,7 +6,7 @@ from utils.logger import SYSTEM_LOGGER
 import time 
 
 def get_mqtt_client():
-    """Connects to AWS IoT Core using mutual TLS (certificates)."""
+    """Connects to AWS IoT Core using mutual TLS (certificates)."""   
     try:
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.verify_mode = ssl.CERT_REQUIRED
