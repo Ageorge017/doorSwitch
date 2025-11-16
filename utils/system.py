@@ -2,7 +2,9 @@ import ntptime
 import time
 import network
 import secrets
+from utils.led import quick_toggle_led
 from utils.logger import SYSTEM_LOGGER
+from machine import Pin, reset
 
 def sync_sys_time():
     """Syncs the Pico W's internal clock using NTP."""

@@ -20,13 +20,23 @@ def continuous_blink():
         signal_error(0)
         time.sleep(0.5)
 
-def quick_toggle(x = 4):
+def quick_toggle_led(x = 4, bulb = "RED"):
     SLEEP_TIME = .1
+    led, toggle_function = RED_LED, signal_error
+
+    
+    if bulb is "GREEN":
+        led = ONBOARD_LED
+        toggle_function = signal_onboard_led
+    if bulb is "RED":
+        led = RED_LED
+        toggle_function = signal_error
+
     for i in range(x):
-        val = ONBOARD_LED.value()
-        signal_onboard_led(1-val)
+        val = led.value()
+        toggle_function(1-val)
         time.sleep(SLEEP_TIME)
-        signal_onboard_led(1 - (1-val))
+        toggle_function(1 - (1-val))
         time.sleep(SLEEP_TIME)
 
 def init_leds():
