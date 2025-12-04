@@ -6,9 +6,6 @@ from utils.system import connect_wifi, sync_sys_time
 import time
 
 try:
-    reed_pin = Pin(14, Pin.IN, Pin.PULL_DOWN)
-    last_state = -1 
-
     init_leds()
     
     quick_toggle_led(2)
@@ -17,6 +14,8 @@ try:
     connect_wifi()
   
     sync_sys_time()
+    reed_pin = Pin(14, Pin.IN, Pin.PULL_DOWN)
+    last_state = -1 
 
     SYSTEM_LOGGER.info("--- Shadow Publisher Running ---")
     while True:

@@ -6,17 +6,26 @@ from utils.led import quick_toggle_led
 from utils.logger import SYSTEM_LOGGER
 from machine import Pin, reset
 
-def sync_sys_time():
+def sync_sys_time(max_attempts=5, delay_s=5):
     """Syncs the Pico W's internal clock using NTP."""
-    SYSTEM_LOGGER.info("Synchronizing system time via NTP...")
-    try:
-        ntptime.host = "pool.ntp.org" 
-        ntptime.settime()
-        (year, month, mday, hour, minute, second, weekday, yearday) = time.localtime()
-        SYSTEM_LOGGER.info(f"Time set successfully to: {year}-{month:02d}-{mday:02d} {hour:02d}:{minute:02d}:{second:02d}")
-    except Exception as e:
-        SYSTEM_LOGGER.error(f"NTP Time synchronization failed: {e}")
-        raise
+    ntptime.host = "129.6.15.28"
+    for attempt in range(max_attempts):
+        try:
+            SYSTEM_LOGGER.info(f"Attempting time sync (Try {attempt + 1}/{max_attempts})...")
+            ntptime.timeout = 5 # seconds
+            ntptime.settime()
+            SYSTEM_LOGGER.info("Time set successfully.")
+            return
+            
+        except Exception as e:
+            SYSTEM_LOGGER.error(f"Time sync failed: {e}")
+            if attempt < max_attempts - 1:
+                time.sleep(delay_s)
+            else:
+                SYSTEM_LOGGER.error(f"NTP Time synchronization failed: {e}")
+            raise
+                
+    return
 
 
 def connect_wifi():
