@@ -3,6 +3,7 @@ from utils.led import init_leds, quick_toggle_led
 from utils.logger import SYSTEM_LOGGER
 from utils.mqtt import executeMQTTPublish
 from utils.system import connect_wifi, sync_sys_time
+from secrets import MQTT_CLIENT_ID
 import time
 
 try:
@@ -25,21 +26,17 @@ try:
         # Only publish if the state has changed
         if current_state != last_state:
             status_text = "CLOSED" if current_state == 1 else "OPEN"
-            SYSTEM_LOGGER.info(f"State change detected. Updating Shadow: {status_text}")
+            SYSTEM_LOGGER.info(f"State change detected.  {status_text}")
             
             # Get the current Unix timestamp
             current_time = time.time()
             quick_toggle_led(4, "GREEN")
             success = executeMQTTPublish({
-                "state": {
-                    "reported": {
-                        "doorStatus": status_text,
-                        "timestamp": current_time 
-                    }
-                }
+                "device": MQTT_CLIENT_ID,
+                "status": status_text
             })
             if success:
-                SYSTEM_LOGGER.info(f"Payload published. Version updated in AWS.")
+                SYSTEM_LOGGER.info(f"Payload published.")
             else:
                 SYSTEM_LOGGER.error("Publish unsuccessful")
             
